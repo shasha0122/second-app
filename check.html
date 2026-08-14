@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="내 상황을 입력하면 청년 지원 정책 자격 여부를 판정해 주는 진단 페이지" />
+  <title>청년지원 | 정책 자격 진단</title>
+
+  <style>
+    :root{
+      --bg:#f4f7fb;
+      --surface:#ffffff;
+      --ink:#10233d;
+      --muted:#5b6e86;
+      --line:#e4ecf4;
+      --navy:#163a66;
+      --blue:#1a73e8;
+      --blue-soft:#e8f1fd;
+      --teal:#0f9d8a;
+      --teal-soft:#e6f7f4;
+      --good:#0b8a6e;
+      --good-bg:#e8f8f3;
+      --bad:#c0392b;
+      --bad-bg:#fdecea;
+      --warn:#b7791f;
+      --warn-bg:#fff6e5;
+      --shadow:0 10px 30px rgba(22,58,102,.07);
+      --radius:20px;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family: Pretendard, "Noto Sans KR", Inter, Arial, sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(circle at 0% 0%, #eaf3ff 0, transparent 36%),
+        radial-gradient(circle at 100% 8%, #e8f8f4 0, transparent 28%),
+        var(--bg);
+      line-height:1.65;
+    }
+    a{color:inherit;text-decoration:none}
+    button,input,select{font:inherit}
+
+    .app{
+      max-width:920px;
+      margin:0 auto;
+      padding:20px 18px 80px;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:22px;
+    }
+    .back{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      color:var(--muted);
+      font-size:14px;
+      font-weight:600;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight:800;
+      letter-spacing:-.03em;
+    }
+    .logo{
+      width:36px;height:36px;
+      border-radius:11px;
+      background:linear-gradient(145deg,#163a66,#1a73e8);
+      color:#fff;
+      display:grid;place-items:center;
+      font-size:13px;
+      box-shadow:0 8px 18px rgba(26,115,232,.28);
+    }
+
+    .hero{
+      background:linear-gradient(160deg,#163a66 0%, #1a5fb4 58%, #1a73e8 100%);
+      color:#fff;
+      border-radius:28px;
+      padding:32px 28px 28px;
+      box-shadow:0 18px 40px rgba(22,58,102,.18);
+      position:relative;
+      overflow:hidden;
+    }
+    .hero:after{
+      content:"";
+      position:absolute;
+      right:-40px;top:-50px;
+      width:180px;height:180px;
+      border-radius:50%;
+      background:rgba(255,255,255,.08);
+    }
+    .hero-kicker{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      background:rgba(255,255,255,.14);
+      border:1px solid rgba(255,255,255,.18);
+      padding:6px 12px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+      margin-bottom:14px;
+    }
+    .hero h1{
+      margin:0;
+      font-size:clamp(26px,4vw,38px);
+      letter-spacing:-.04em;
+      line-height:1.2;
+    }
+    .hero p{
+      margin:12px 0 0;
+      color:rgba(255,255,255,.86);
+      max-width:640px;
+      font-size:15px;
+    }
+    .trust-row{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+      margin-top:22px;
+    }
+    .trust{
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.16);
+      border-radius:14px;
+      padding:12px 14px;
+    }
+    .trust b{display:block;font-size:13px}
+    .trust span{font-size:11px;opacity:.8}
+
+    .panel{
+      background:var(--surface);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:24px;
+      margin-top:18px;
+    }
+    .panel h2{
+      margin:0 0 6px;
+      font-size:20px;
+      letter-spacing:-.03em;
+    }
+    .panel-lead{
+      margin:0 0 20px;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .group{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:18px;
+      margin-bottom:14px;
+      background:#fbfdff;
+    }
+    .group-title{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size:14px;
+      font-weight:800;
+      margin-bottom:14px;
+      color:var(--navy);
+    }
+    .group-icon{
+      width:28px;height:28px;
+      border-radius:8px;
+      background:var(--blue-soft);
+      color:var(--blue);
+      display:grid;place-items:center;
+      font-size:13px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:14px;
+    }
+    .field label{
+      display:block;
+      font-size:12px;
+      font-weight:700;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+    .field input,
+    .field select{
+      width:100%;
+      padding:12px 14px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--ink);
+      font-size:15px;
+      outline:none;
+      transition:border-color .15s ease, box-shadow .15s ease;
+    }
+    .field input:focus,
+    .field select:focus{
+      border-color:var(--blue);
+      box-shadow:0 0 0 4px rgba(26,115,232,.12);
+    }
+    .hint{font-size:12px;color:#7b8da3;margin-top:6px}
+
+    .toggles{display:grid;gap:10px;margin-top:4px}
+    .toggle{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:14px 16px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#fff;
+    }
+    .toggle span{font-size:14px;font-weight:700}
+    .toggle small{display:block;color:var(--muted);font-weight:500;font-size:12px}
+    .toggle input{width:18px;height:18px;accent-color:var(--blue)}
+
+    .diagnose{
+      appearance:none;
+      width:100%;
+      margin-top:8px;
+      border:none;
+      border-radius:16px;
+      padding:16px 20px;
+      font-size:16px;
+      font-weight:800;
+      color:#fff;
+      background:linear-gradient(135deg,#163a66,#1a73e8);
+      cursor:pointer;
+      box-shadow:0 12px 24px rgba(26,115,232,.25);
+    }
+    .diagnose:hover{filter:brightness(1.05)}
+
+    #resultArea{display:none}
+    #resultArea.show{display:block}
+
+    .result-card{
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:20px;
+      margin-bottom:14px;
+      background:#fff;
+    }
+    .result-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:12px;
+    }
+    .result-card h3{
+      margin:0;
+      font-size:17px;
+      letter-spacing:-.02em;
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      font-size:12px;
+      font-weight:800;
+      padding:5px 10px;
+      border-radius:999px;
+      white-space:nowrap;
+    }
+    .badge.good{background:var(--good-bg);color:var(--good)}
+    .badge.bad{background:var(--bad-bg);color:var(--bad)}
+    .badge.warn{background:var(--warn-bg);color:var(--warn)}
+
+    .result-card ul{
+      margin:0;
+      padding:0;
+      list-style:none;
+      display:grid;
+      gap:8px;
+    }
+    .result-card li{
+      font-size:13px;
+      color:#38516d;
+      padding:8px 10px;
+      border-radius:10px;
+      background:#f7fafc;
+    }
+    .amount{
+      margin-top:14px;
+      padding:16px;
+      border-radius:14px;
+      background:linear-gradient(135deg,var(--teal-soft),#eef6ff);
+      color:var(--navy);
+      font-weight:800;
+      font-size:15px;
+    }
+    .amount small{display:block;color:var(--muted);font-weight:600;font-size:12px;margin-bottom:4px}
+    .channel,.confirm{
+      display:block;
+      margin-top:10px;
+      font-size:12px;
+      color:var(--muted);
+    }
+    .disclaimer{
+      margin:4px 0 0;
+      padding:14px 16px;
+      border-radius:14px;
+      background:var(--warn-bg);
+      color:#8a5a12;
+      font-size:13px;
+    }
+
+    .cases-list{display:grid;gap:10px}
+    .case{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      padding:14px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#fff;
+    }
+    .case p{margin:0;font-size:13px;color:#3d536c}
+    .case b{color:var(--navy)}
+    .case button{
+      flex:0 0 auto;
+      border:1px solid #cfe0f5;
+      background:var(--blue-soft);
+      color:var(--blue);
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:12px;
+      font-weight:800;
+      cursor:pointer;
+    }
+    .case button:hover{background:#dceafc}
+
+    footer{
+      margin-top:28px;
+      text-align:center;
+      color:#7b8da3;
+      font-size:12px;
+    }
+
+    @media(max-width:720px){
+      .trust-row,.grid{grid-template-columns:1fr}
+      .hero,.panel{padding:22px 18px}
+      .case{flex-direction:column}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <a class="back" href="index.html">← 포트폴리오</a>
+      <div class="brand"><span class="logo">청</span>청년지원</div>
+    </div>
+
+    <header class="hero">
+      <div class="hero-kicker">공식 공고 기준 · 확인된 조건만 판정</div>
+      <h1>내 조건으로 받을 수 있는<br>청년 지원을 확인해 보세요</h1>
+      <p>
+        나이, 주거, 소득·자산 정보를 입력하면 국토부 월세지원, 서울시 자체 사업, 청년도약계좌 자격을
+        원본에 적힌 조건만으로 판정합니다. 확인되지 않은 수치는 추정하지 않습니다.
+      </p>
+      <div class="trust-row">
+        <div class="trust"><b>3개 정책</b><span>월세 · 서울시 · 도약계좌</span></div>
+        <div class="trust"><b>근거 기반</b><span>미기재 항목은 단정하지 않음</span></div>
+        <div class="trust"><b>신청 안내</b><span>채널과 확인일까지 표시</span></div>
+      </div>
+    </header>
+
+    <section class="panel" aria-labelledby="form-title">
+      <h2 id="form-title">내 상황 입력</h2>
+      <p class="panel-lead">은행 앱처럼 필요한 정보만 순서대로 입력하면 됩니다. 비워 둔 항목은 해당 정책에서 확인 필요로 처리됩니다.</p>
+
+      <div class="group">
+        <div class="group-title"><span class="group-icon">01</span>기본 정보</div>
+        <div class="grid">
+          <div class="field">
+            <label for="age">만 나이</label>
+            <input type="number" id="age" min="0" placeholder="예: 30" />
+          </div>
+          <div class="field">
+            <label for="serviceMonths">병역 복무 기간 (개월)</label>
+            <input type="number" id="serviceMonths" min="0" value="0" />
+            <div class="hint">해당 없으면 0으로 두세요. 연령 상한 연장에 반영됩니다.</div>
+          </div>
+          <div class="field">
+            <label for="region">거주지</label>
+            <select id="region">
+              <option value="서울">서울</option>
+              <option value="비서울">서울 외 지역</option>
+            </select>
+          </div>
+        </div>
+        <div class="toggles" style="margin-top:14px">
+          <label class="toggle">
+            <div>
+              <span>무주택자입니다</span>
+              <small>월세지원 공통 조건</small>
+            </div>
+            <input type="checkbox" id="noHouse" checked />
+          </label>
+          <label class="toggle">
+            <div>
+              <span>1인 가구입니다</span>
+              <small>서울시 자체 사업 조건</small>
+            </div>
+            <input type="checkbox" id="singleHousehold" checked />
+          </label>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-title"><span class="group-icon">02</span>주거 정보</div>
+        <div class="grid">
+          <div class="field">
+            <label for="deposit">보증금 (만원)</label>
+            <input type="number" id="deposit" min="0" placeholder="예: 5000" />
+          </div>
+          <div class="field">
+            <label for="rent">월세 (만원)</label>
+            <input type="number" id="rent" min="0" placeholder="예: 55" />
+          </div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-title"><span class="group-icon">03</span>소득 · 자산</div>
+        <div class="grid">
+          <div class="field">
+            <label for="incomePct">소득 (기준 중위소득 대비 %)</label>
+            <input type="number" id="incomePct" min="0" placeholder="예: 100" />
+            <div class="hint">서울시 사업 판정용. 국토부 사업은 소득 기준이 원본에 없어 사용하지 않습니다.</div>
+          </div>
+          <div class="field">
+            <label for="assetWon">일반재산 (만원)</label>
+            <input type="number" id="assetWon" min="0" placeholder="예: 10000" />
+          </div>
+          <div class="field">
+            <label for="carValueWon">차량시가표준액 (만원)</label>
+            <input type="number" id="carValueWon" min="0" value="0" />
+            <div class="hint">차량이 없으면 0으로 두세요.</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="diagnose" onclick="diagnose()">자격 진단하기</button>
+    </section>
+
+    <section class="panel" id="resultArea" aria-labelledby="result-title">
+      <h2 id="result-title">진단 결과</h2>
+      <p class="panel-lead">가능 / 불가 / 확인 필요로 구분합니다. 금액은 원본에 확인된 한도만 표시합니다.</p>
+      <div id="resultCards"></div>
+      <p class="disclaimer">본 결과는 참고용입니다. 최종 자격과 신청 가능 여부는 반드시 공식 공고에서 확인하세요.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="cases-title">
+      <h2 id="cases-title">검수용 예시</h2>
+      <p class="panel-lead">원본에 적힌 정답 케이스입니다. 버튼을 누르면 같은 값으로 채워 검산할 수 있습니다.</p>
+      <div class="cases-list">
+        <div class="case">
+          <p><b>케이스 1</b> · 만 36세 + 병역 24개월 → 도약계좌 가입 가능 (36−2=34)</p>
+          <button onclick="fillCase(1)">이 예시로 채우기</button>
+        </div>
+        <div class="case">
+          <p><b>케이스 2</b> · 보증금 6천만원 → 국토부 월세지원 불가 (5천만원 초과)</p>
+          <button onclick="fillCase(2)">이 예시로 채우기</button>
+        </div>
+        <div class="case">
+          <p><b>케이스 3</b> · 서울 거주 만 37세, 병역 없음, 보증금 5천만원, 월세 55만원, 소득 중위 100%, 무주택, 일반재산 1억원, 차량 없음 → 국토부 불가 / 서울시 가능</p>
+          <button onclick="fillCase(3)">이 예시로 채우기</button>
+        </div>
+        <div class="case">
+          <p><b>케이스 4</b> · 만 36세 + 병역 24개월, 비서울, 보증금 4천만원, 월세 65만원 → 국토부 월세지원 가능</p>
+          <button onclick="fillCase(4)">이 예시로 채우기</button>
+        </div>
+        <div class="case">
+          <p><b>케이스 5</b> · 서울 거주 만 30세, 보증금 7천만원, 월세 50만원, 소득 중위 160% → 서울시 자체 사업 불가 (소득 기준 초과)</p>
+          <button onclick="fillCase(5)">이 예시로 채우기</button>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      본 페이지의 모든 판정 근거는 확인일 기준 공고입니다. 신청 전 반드시 관할 기관에서 최신 조건을 재확인하세요.
+    </footer>
+  </div>
+
+  <script>
+    function num(id){
+      var v = document.getElementById(id).value;
+      return v === '' ? null : Number(v);
+    }
+    function bool(id){
+      return document.getElementById(id).checked;
+    }
+
+    function readInput(){
+      return {
+        age: num('age'),
+        serviceMonths: num('serviceMonths') || 0,
+        region: document.getElementById('region').value,
+        deposit: num('deposit'),
+        rent: num('rent'),
+        incomePct: num('incomePct'),
+        assetWon: num('assetWon'),
+        carValueWon: num('carValueWon') || 0,
+        noHouse: bool('noHouse'),
+        singleHousehold: bool('singleHousehold')
+      };
+    }
+
+    // 국토부 청년월세지원: 확인일 2026-08-13 (병역 항목 2026-08-14 보강, 소득·재산 미확정)
+    function judgeGukto(i){
+      var reasons = [];
+      var hardFail = false;
+
+      if (!i.noHouse){ hardFail = true; reasons.push('무주택 조건 불충족'); }
+      else reasons.push('무주택 조건 충족');
+
+      if (i.deposit === null){ reasons.push('보증금 정보 없음'); hardFail = true; }
+      else if (i.deposit > 5000){ hardFail = true; reasons.push('보증금 조건 불충족 (5,000만원 이하, 입력 ' + i.deposit + '만원)'); }
+      else reasons.push('보증금 조건 충족 (5,000만원 이하)');
+
+      if (i.rent === null){ reasons.push('월세 정보 없음'); hardFail = true; }
+      else if (i.rent > 70){ hardFail = true; reasons.push('월세 조건 불충족 (70만원 이하, 입력 ' + i.rent + '만원)'); }
+      else reasons.push('월세 조건 충족 (70만원 이하)');
+
+      reasons.push('소득·재산 기준: 원본 미기재/미검증 — 판정에 반영하지 않음');
+
+      var ageOutcome = gukToAgeCap(i.age, i.serviceMonths);
+      reasons.push(ageOutcome.note);
+
+      var verdict;
+      if (hardFail){
+        verdict = '불가';
+      } else if (ageOutcome.indeterminate){
+        verdict = '확인 필요';
+      } else if (!ageOutcome.pass){
+        verdict = '불가';
+      } else {
+        verdict = '가능';
+      }
+
+      var amount = null;
+      if (verdict === '가능' && i.rent !== null){
+        var monthly = Math.min(i.rent, 20);
+        amount = { monthly: monthly, months: 24, total: monthly * 24 };
+      }
+
+      return {
+        title: '청년월세지원 (국토부)',
+        verdict: verdict,
+        reasons: reasons,
+        amount: amount,
+        applyChannel: '복지로(bokjiro.go.kr, 온라인) 또는 주소지 관할 주민센터(오프라인)',
+        confirm: '확인일: 2026-08-13 (병역 항목 2026-08-14 보강, 소득·재산 기준 미확정)'
+      };
+    }
+
+    function gukToAgeCap(age, serviceMonths){
+      if (age === null){
+        return { pass:false, indeterminate:false, note:'나이 정보 없음' };
+      }
+      if (serviceMonths >= 24){
+        var cap = 36;
+        var pass = age >= 19 && age <= cap;
+        return { pass: pass, indeterminate:false, note: '나이 조건: 2년 이상 복무로 상한 만 36세 적용 → ' + (pass ? '충족' : '불충족') + ' (만 19~36세, 입력 만 ' + age + '세)' };
+      }
+      if (serviceMonths > 0 && serviceMonths < 24){
+        if (age <= 34 && age >= 19){
+          return { pass:true, indeterminate:false, note:'나이 조건 충족 (복무 중이나 기본 상한 만 34세 이내, 만 ' + age + '세)' };
+        }
+        return { pass:false, indeterminate:true, note:'나이 조건 확인 불가: 병역 ' + serviceMonths + '개월의 정확한 연령 상한 연장 폭이 출처마다 달라 확정하지 못함 (24개월 이상 복무 시 만 36세까지 인정되는 것만 확인됨)' };
+      }
+      var pass0 = age >= 19 && age <= 34;
+      return { pass: pass0, indeterminate:false, note: '나이 조건 (만 19~34세): ' + (pass0 ? '충족' : '불충족') + ' (입력 만 ' + age + '세)' };
+    }
+
+    // 서울시 자체 청년월세지원: 확인일 2026-08-14
+    function judgeSeoul(i){
+      var reasons = [];
+      var ok = true;
+
+      if (i.region !== '서울'){ ok = false; reasons.push('서울 거주 조건 불충족 (서울시 자체 사업)'); }
+      else reasons.push('서울 거주 조건 충족');
+
+      if (!i.singleHousehold){ ok = false; reasons.push('1인 가구 조건 불충족'); }
+      else reasons.push('1인 가구 조건 충족');
+
+      if (!i.noHouse){ ok = false; reasons.push('무주택 조건 불충족'); }
+      else reasons.push('무주택 조건 충족');
+
+      var cap = 39 + (i.serviceMonths > 0 ? 3 : 0);
+      if (i.age === null){ ok = false; reasons.push('나이 정보 없음'); }
+      else if (i.age < 19 || i.age > cap){
+        ok = false;
+        reasons.push('나이 조건 불충족 (만 19~' + cap + '세' + (i.serviceMonths > 0 ? ', 의무복무자 상한 3세 연장 반영' : '') + ', 입력 만 ' + i.age + '세)');
+      } else {
+        reasons.push('나이 조건 충족 (만 19~' + cap + '세' + (i.serviceMonths > 0 ? ', 의무복무자 상한 3세 연장 반영' : '') + ')');
+      }
+
+      if (i.deposit === null){ ok = false; reasons.push('보증금 정보 없음'); }
+      else if (i.deposit > 8000){ ok = false; reasons.push('보증금 조건 불충족 (8,000만원 이하, 입력 ' + i.deposit + '만원)'); }
+      else reasons.push('보증금 조건 충족 (8,000만원 이하)');
+
+      if (i.rent === null){ ok = false; reasons.push('월세 정보 없음'); }
+      else if (i.rent > 60){ ok = false; reasons.push('월세 조건 불충족 (60만원 이하, 입력 ' + i.rent + '만원)'); }
+      else reasons.push('월세 조건 충족 (60만원 이하)');
+
+      if (i.incomePct === null){ ok = false; reasons.push('소득 정보 없음'); }
+      else if (i.incomePct <= 48 || i.incomePct > 150){ ok = false; reasons.push('소득 조건 불충족 (중위소득 48% 초과 ~150% 이하, 입력 ' + i.incomePct + '%)'); }
+      else reasons.push('소득 조건 충족 (중위소득 48% 초과 ~150% 이하)');
+
+      if (i.assetWon === null){ ok = false; reasons.push('일반재산 정보 없음'); }
+      else if (i.assetWon > 13000){ ok = false; reasons.push('일반재산 조건 불충족 (1억 3천만원 이하, 입력 ' + i.assetWon + '만원)'); }
+      else reasons.push('일반재산 조건 충족 (1억 3천만원 이하)');
+
+      if (i.carValueWon >= 2500){ ok = false; reasons.push('차량시가표준액 조건 불충족 (2,500만원 미만, 입력 ' + i.carValueWon + '만원)'); }
+      else reasons.push('차량시가표준액 조건 충족 (2,500만원 미만)');
+
+      var verdict = ok ? '가능' : '불가';
+      var amount = null;
+      if (verdict === '가능' && i.rent !== null){
+        var monthly = Math.min(i.rent, 20);
+        amount = { monthly: monthly, months: 12, total: monthly * 12 };
+      }
+
+      return {
+        title: '청년월세지원 (서울시 자체 사업)',
+        verdict: verdict,
+        reasons: reasons,
+        amount: amount,
+        applyChannel: '서울주거포털(housing.seoul.go.kr) — 온라인 신청만 가능, 방문·우편 불가',
+        confirm: '확인일: 2026-08-14 (출처: soco.seoul.go.kr, housing.seoul.go.kr). 상시모집 아님 — 신청 전 최신 공고 확인 필요'
+      };
+    }
+
+    // 청년도약계좌: 확인일 2026-08-13
+    function judgeDoyak(i){
+      var reasons = [];
+      if (i.age === null){
+        return { title:'청년도약계좌', verdict:'확인 필요', reasons:['나이 정보 없음'], confirm:'확인일: 2026-08-13' };
+      }
+      var effectiveAge = i.age - (i.serviceMonths / 12);
+      var pass = effectiveAge <= 34 && i.age >= 19;
+      reasons.push('병역 ' + i.serviceMonths + '개월만큼 나이에서 차감 → 산정 나이 ' + effectiveAge.toFixed(1) + '세');
+      reasons.push('나이 조건 (산정 나이 만 34세 이하): ' + (pass ? '충족' : '불충족'));
+      reasons.push('지원 금액: 원본 미기재 (금액은 지어내지 않음)');
+      return {
+        title: '청년도약계좌',
+        verdict: pass ? '가능' : '불가',
+        reasons: reasons,
+        confirm: '확인일: 2026-08-13'
+      };
+    }
+
+    function badgeClass(verdict){
+      if (verdict === '가능') return 'good';
+      if (verdict === '불가') return 'bad';
+      return 'warn';
+    }
+
+    function renderCard(result){
+      var li = result.reasons.map(function(r){ return '<li>' + r + '</li>'; }).join('');
+      var amountHtml = '';
+      if (result.amount){
+        amountHtml = '<div class="amount"><small>예상 지원액</small>월 ' + result.amount.monthly + '만원 × ' + result.amount.months + '개월 = 총 ' + result.amount.total + '만원</div>';
+      }
+      var channelHtml = '';
+      if (result.applyChannel){
+        channelHtml = '<span class="channel">신청 채널: ' + result.applyChannel + '</span>';
+      }
+      return '' +
+        '<div class="result-card">' +
+          '<div class="result-head">' +
+            '<h3>' + result.title + '</h3>' +
+            '<span class="badge ' + badgeClass(result.verdict) + '">' + result.verdict + '</span>' +
+          '</div>' +
+          '<ul>' + li + '</ul>' +
+          amountHtml +
+          channelHtml +
+          '<span class="confirm">' + result.confirm + '</span>' +
+        '</div>';
+    }
+
+    function diagnose(){
+      var i = readInput();
+      if (i.age === null){
+        alert('나이를 입력해 주세요.');
+        return;
+      }
+      var results = [judgeGukto(i), judgeSeoul(i), judgeDoyak(i)];
+      document.getElementById('resultCards').innerHTML = results.map(renderCard).join('');
+      var area = document.getElementById('resultArea');
+      area.classList.add('show');
+      area.scrollIntoView({ behavior:'smooth', block:'start' });
+    }
+
+    var CASES = {
+      1: { age:36, serviceMonths:24, region:'비서울', deposit:'', rent:'', incomePct:'', assetWon:'', carValueWon:0, noHouse:true, singleHousehold:true },
+      2: { age:30, serviceMonths:0, region:'비서울', deposit:6000, rent:50, incomePct:'', assetWon:'', carValueWon:0, noHouse:true, singleHousehold:true },
+      3: { age:37, serviceMonths:0, region:'서울', deposit:5000, rent:55, incomePct:100, assetWon:10000, carValueWon:0, noHouse:true, singleHousehold:true },
+      4: { age:36, serviceMonths:24, region:'비서울', deposit:4000, rent:65, incomePct:'', assetWon:'', carValueWon:0, noHouse:true, singleHousehold:true },
+      5: { age:30, serviceMonths:0, region:'서울', deposit:7000, rent:50, incomePct:160, assetWon:10000, carValueWon:0, noHouse:true, singleHousehold:true }
+    };
+
+    function fillCase(n){
+      var c = CASES[n];
+      document.getElementById('age').value = c.age;
+      document.getElementById('serviceMonths').value = c.serviceMonths;
+      document.getElementById('region').value = c.region;
+      document.getElementById('deposit').value = c.deposit;
+      document.getElementById('rent').value = c.rent;
+      document.getElementById('incomePct').value = c.incomePct;
+      document.getElementById('assetWon').value = c.assetWon;
+      document.getElementById('carValueWon').value = c.carValueWon;
+      document.getElementById('noHouse').checked = c.noHouse;
+      document.getElementById('singleHousehold').checked = c.singleHousehold;
+      diagnose();
+    }
+  </script>
+</body>
+</html>
